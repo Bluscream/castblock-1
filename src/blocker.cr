@@ -59,6 +59,7 @@ class Castblock::Blocker
         end
       end
 
+<<<<<<< HEAD
       if (payload = message.payload_data) && payload.status.size > 0
         if @mute_ads
           # && (payload = message.payload_data) && payload.status.size > 0
@@ -76,7 +77,21 @@ class Castblock::Blocker
             @chromecast.skip_ad(device)
           end
         end
+=======
+      if @mute_ads && (payload = message.payload_data) && payload.status.size > 0
+        handle_ad(device, payload.status[0])
+>>>>>>> 1d3d5d3b25d71e211cf78128f3d3ca415db1ea36
       end
+    end
+  end
+
+  private def handle_ad(device : Chromecast::Device, payload_status : Chromecast::WatchMessagePayload::PayloadStatus) : Nil
+    if payload_status.custom_data.player_state == 1081 && payload_status.volume.muted == false
+      Log.info &.emit("Found ad, muting audio", device: device.name)
+      @chromecast.set_mute(device, true)
+    elsif payload_status.custom_data.player_state != 1081 && payload_status.volume.muted
+      Log.info &.emit("Ad ended, unmuting audio", device: device.name)
+      @chromecast.set_mute(device, false)
     end
   end
 
